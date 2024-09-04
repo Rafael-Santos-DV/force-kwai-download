@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Force Download</title>
+  </head>
+  <body>
+    <div class="p-5 w-full mx-auto max-w-lg flex gap-4 items-center flex-col">
+      <textarea
+        class="w-full textarea textarea-primary"
+        id="urls-link"
+        placeholder="Adicionar Links"
+      ></textarea>
+      <button class="btn btn-outline btn-success">
+        <a id="downloadLink">Download</a>
+      </button>
+      <span
+        id="loading"
+        class="loading loading-spinner text-info hidden"
+      ></span>
+      <p id="total-downloads"></p>
+    </div>
+
+    <script>
+      let total = 0;
+      const links = document.getElementById("urls-link");
+      // const MAX_CONCURRENT_DOWNLOADS = 5; // Limite de downloads simultâneos
+
+      async function getLinks() {
+        const loading = document.getElementById("loading");
+        loading.classList.replace("hidden", "block");
+        loading.classList.add("block");
+
+        const value = links.value;
+
+        let filterLinks = value.includes(" ") ? value.split(" ") : [value];
+
+        const allLinks = [];
+        filterLinks
+          .filter((text) => text.includes("https://"))
+          .forEach((text) => {
+            const arrayText = text.split("\n");
+            console.log(arrayText);
+            const link = arrayText.filter((item) => item.includes("https://"));
+            allLinks.push(...link);
+            return arrayText[link];
+          });
+
+        total = filterLinks.length;
+        const result = await axios.post(
+          "http://localhost:3000/urls-kwai",
+          allLinks
+        );
+        return result.data;
+      }
+
+      function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      async function downloadFile(linkKwai) {
+        try {
+          const response = await fetch(linkKwai.videoSrc);
+          if (!response.ok)
+            throw new Error(
+              `Network response was not ok ${response.statusText}`
+            );
+          const blob = await response.blob();
+          const fileName = `${linkKwai.name}.mp4`;
+          saveAs(blob, fileName);
+          loading.classList.replace("block", "hidden");
+          loading.classList.add("hidden");
+          console.log(`Download concluído: ${fileName}`);
+        } catch (err) {
+          console.error(`Erro ao baixar o vídeo ${linkKwai.name}:`, err);
+          // Adiciona a lógica de re-tentativa se necessário
+        }
+      }
+
+      document
+        .getElementById("downloadLink")
+        .addEventListener("click", async function (event) {
+          event.preventDefault();
+          const data = await getLinks();
+          const totalLinks = data.length;
+
+          const MAX_CONCURRENT_DOWNLOADS = 5;
+          let index = 0;
+          const downloadTasks = [];
+
+          while (index < totalLinks) {
+            // Adiciona tarefas para downloads simultâneos
+            while (
+              downloadTasks.length < MAX_CONCURRENT_DOWNLOADS &&
+              index < totalLinks
+            ) {
+              downloadTasks.push(downloadFile(data[index++]));
+            }
+
+            // Aguarda todas as tarefas atuais serem concluídas antes de iniciar novas
+            await Promise.all(downloadTasks);
+            downloadTasks.length = 0; // Limpa as tarefas concluídas
+            await sleep(500); // Adiciona atraso para evitar sobrecarga
+          }
+
+          document.getElementById(
+            "total-downloads"
+          ).innerText = `Seus ${total} vídeos foram baixados...`;
+          console.log("Todos os downloads foram concluídos");
+        });
+    </script>
+  </body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Force Download</title>
+</head>
+<body>
+ 
+    <textarea id="urls-link"></textarea>
+  <a id="downloadLink">Download</a>
+
+  <script>
+     
+    const links = document.getElementById("urls-link");
+
+    async function getLinks() {
+      const result = await axios.post('http://localhost:3000/urls-kwai', links.value.split(','));
+
+      return result;
+    }
+    document.getElementById('downloadLink').addEventListener('click', async function(event) {
+    
+      event.preventDefault();
+      const { data } = await getLinks();
+
+      for (const linkKwai of data) {
+        console.log(linkKwai);
+        fetch(linkKwai.videoSrc)
+        .then(response => response.blob())
+        .then(blob => {
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(blob);
+          link.setAttribute('download', `${linkKwai.name}.mp4`); // Nome do arquivo que será baixado
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        })
+        .catch(err => console.error('Erro ao baixar o vídeo:', err));
+      }      
+    });
+  </script>
+</body>
+</html> -->

@@ -1,6 +1,6 @@
-# 🖥️ Projeto Incrível
+# 🖥️ FORCE-KWAI-DOWNLOAD
 
-Bem-vindo ao **Projeto Incrível**! Este projeto é a base perfeita para iniciar o desenvolvimento do seu front-end com um servidor Node.js. Siga as instruções abaixo para configurar e iniciar o projeto localmente.
+O Force-Kwai-Download é uma ferramenta poderosa que permite aos usuários baixar vários vídeos do Kwai usando links diretos. Projetado para simplicidade e eficiência, este projeto permite o download em massa de vídeos em seu formato bruto, fornecendo aos usuários acesso rápido e fácil ao seu conteúdo favorito.
 
 ## 🚀 Começando
 
@@ -10,7 +10,7 @@ Estas instruções irão ajudá-lo a obter uma cópia do projeto em funcionament
 
 Antes de começar, você precisará ter instalado em sua máquina:
 
-- [Node.js](https://nodejs.org) (v12 ou superior)
+- [Node.js](https://nodejs.org) (v18 ou superior)
 - [NPM](https://www.npmjs.com/get-npm) (geralmente instalado junto com o Node.js)
 
 ### 🔧 Instalação
